@@ -4,7 +4,7 @@ This is a description of the serial protocol for this alternative firmware.
 
 ## Configuration
 
-The serial works at 9600 8N1, the low speed is intended to allow MCU to handle
+The serial works at 38400 8N1, the low speed is intended to allow MCU to handle
 the flow without interfering too much with the rest of the work.
 
 ## Startup
@@ -29,7 +29,7 @@ to use the same controller board and then the model returned may be different.
 ### Version Query
 
 * Send: "VERSION"
-* Receive: "VERSION: X.XX"
+* Receive: "VERSION: X.X.X"
 
 ### System Configuration Query
 

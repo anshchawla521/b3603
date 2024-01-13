@@ -2,5 +2,6 @@
     "files.associations": {
         "stm8s.h": "c",
         "address_definitions.h": "c"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

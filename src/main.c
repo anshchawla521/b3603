@@ -16,7 +16,7 @@
  *  along with B3603 alternative firmware.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FW_VERSION "1.0.1"
+#define FW_VERSION "1.0.2"
 #define MODEL "B3603"
 // #define STM8S003
 
@@ -655,11 +655,12 @@ void ensure_afr0_set(void)
 	}
 }
 
-int main()
+void main()
 {
 	unsigned long i = 0;
 
 	pinout_init();
+
 	clk_init();
 	uart_init();
 	pwm_init();

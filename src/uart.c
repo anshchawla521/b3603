@@ -35,7 +35,7 @@ void uart_init()
 	USART1_CR3 = 0;
 
 	USART1_BRR2 = 0x1;
-	USART1_BRR1 = 0x1A; // 38400 baud, order important between BRRs, BRR1 must be last
+	USART1_BRR1 = 0x1A; // 38400 baud, order important between BRRs, BRR1 must be last acc to RM0016
 
 	USART1_CR2 = USART_CR2_TEN | USART_CR2_REN; // Allow TX & RX
 
