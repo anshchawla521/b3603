@@ -19,6 +19,18 @@ This firmware is an attempt to complete the b3603 firmware written by baruch.
 
 > Note : The 2023 driver for CH340 has issues so prefer using the 2014 driver as it works perfectly.
 
+## Error Codes
+
+- E000 -> AFR0 optionbyte not set in stvp
+
 ## ACKNOWLEDGMENT
 
 A very special thanks to Baruch as he was the original creator of this Firmware and did most of the work.
+
+## bugs
+
+- the afr flag is not able to be set from flag as the uart_flush_writes function never returns back.
+
+## changes
+
+- buttons working

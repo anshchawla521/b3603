@@ -24,6 +24,7 @@
 #include "address_definitions.h"
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <ctype.h>
 
 #include "display.h"
@@ -655,6 +656,70 @@ void ensure_afr0_set(void)
 	}
 }
 
+void detect_button_press()
+{
+	// opt2 afr0 sets c7 as tim1 ch2
+	// configure both as input for safety
+	// no debounce protection
+	// ideally make output high first then input pull up
+
+	PC_CR1 |= (1 << 7); // enable pull up on pc7 / push pull
+	PD_CR1 |= (1 << 1);
+	PD_DDR &= ~(1 << 1); // making pin as input
+	PC_DDR &= ~(1 << 7);
+
+	PC_ODR &= ~(1 << 7); // default output 0
+	PD_ODR &= ~(1 << 1);
+
+	if ((PD_IDR & (1 << 1)) == 0)
+	{
+		// down button press
+		uart_write_str("DOWN\n");
+		return;
+	}
+
+	if ((PC_IDR & (1 << 7)) == 0)
+	{
+		// set button press
+		uart_write_str("SET\n");
+		return;
+	}
+
+	PD_ODR &= (~(1 << 1)); // make pd1 go low push pull
+	PD_DDR |= 1 << 1;
+	if ((PC_IDR & (1 << 7)) == 0)
+	{
+		// ok button press
+		uart_write_str("OK\n");
+		PC_CR1 |= (1 << 7); // enable pull up on pc7
+		PD_CR1 |= (1 << 1);
+		PD_DDR &= ~(1 << 1); // make input
+		PC_DDR &= ~(1 << 7);
+		return;
+	}
+
+	PD_ODR |= (1 << 1);	 // be careful
+	PD_DDR &= ~(1 << 1); // make input
+	PC_DDR |= 1 << 7;
+	PC_DDR |= 1 << 7; // repeated so as to waste time and give pc7 time to fall since from oscilloscope i infered that everthing was correct just that the fall time of port c was much greater than port d so just created a delay so that pc7 could fall more
+
+	if ((PD_IDR & (1 << 1)) == 0)
+	{
+		// up button press
+		uart_write_str("UP\n");
+		PC_CR1 |= (1 << 7); // enable pull up on pc7
+		PD_CR1 |= (1 << 1);
+		PD_DDR &= ~(1 << 1); // make input
+		PC_DDR &= ~(1 << 7);
+		return;
+	}
+
+	PC_CR1 |= (1 << 7); // enable pull up on pc7
+	PD_CR1 |= (1 << 1);
+	PD_DDR &= ~(1 << 1); // make input
+	PC_DDR &= ~(1 << 7);
+}
+
 void main()
 {
 	unsigned long i = 0;
@@ -682,6 +747,7 @@ void main()
 		read_state();
 		display_refresh();
 		uart_drive();
+		detect_button_press();
 		if (read_newline)
 		{
 			process_input();

@@ -63,6 +63,7 @@ void uart_write_str(const char *str)
 	// Move the buffer to the start
 	if (uart_write_start > 0)
 	{
+		// shift out the already written bits of data
 		for (i = 0; i < uart_write_len; i++)
 		{
 			uart_write_buf[i] = uart_write_buf[i + uart_write_start];
@@ -201,12 +202,15 @@ void uart_write_fixed_point(uint32_t val)
 
 void uart_write_from_buf(void)
 {
+	if (uart_write_len == 0){
+		uart_write_start = 0;
+		return;
+	}
+
 	USART1_DR = uart_write_buf[uart_write_start];
 	uart_write_start++;
 	uart_write_len--;
 
-	if (uart_write_len == 0)
-		uart_write_start = 0;
 }
 
 inline uint8_t uart_read_ch(void)
@@ -252,6 +256,19 @@ void uart_drive(void)
 
 void uart_flush_writes(void)
 {
-	while (uart_write_len > 0)
+	uint8_t temp = 0;
+	while (uart_write_len > 0){
+		temp = uart_write_len;
 		uart_drive();
+		PB_ODR ^= (1<<4); // output led toggle
+		if(temp > uart_write_len)
+		{
+			// on led
+			PA_ODR |= 1<<3;
+		}else{
+			// off led
+			PA_ODR &= ~(1<<3);
+		}
+
+	}
 }
