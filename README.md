@@ -25,7 +25,9 @@ This firmware is an attempt to complete the b3603 firmware written by baruch.
 
 ## ACKNOWLEDGMENT
 
-A very special thanks to Baruch as he was the original creator of this Firmware and did most of the work.
+A very special thanks to @baruch as he was the original creator of this Firmware and did most of the work.
+Also thanks to @UsrnameTaken , would be using his b3606 code to decrease the size of my code 
+
 
 ## bugs
 
