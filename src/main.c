@@ -743,7 +743,7 @@ void main()
 
 	do
 	{
-		iwatchdog_tick();
+		iwatchdog_tick(); 
 		read_state();
 		display_refresh();
 		uart_drive();
