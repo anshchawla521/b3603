@@ -546,8 +546,8 @@ inline void pinout_init()
 	// PC6 is Iout control, output
 	// PC7 is Button 1, input
 	PC_ODR = 0;
-	PC_DDR = (1 << 5) || (1 << 6);
-	PC_CR1 = (1 << 7); // For the button
+	PC_DDR = (1 << 5) | (1 << 6) | (1 << 3);
+	PC_CR1 = (1 << 7) | (1 << 3); // For the button // set push pull
 	PC_CR2 = (1 << 5) | (1 << 6);
 
 	// PD1 is Button 2, input
@@ -576,14 +576,14 @@ void read_state(void)
 {
 	uint8_t tmp;
 
-	tmp = (PC_IDR & (1 << 3)) ? 1 : 0;
-	if (state.pc3 != tmp)
-	{
-		uart_write_str("PC3 is now ");
-		uart_write_ch('0' + tmp);
-		uart_write_str("\r\n");
-		state.pc3 = tmp;
-	}
+	// tmp = (PC_IDR & (1 << 3)) ? 1 : 0;
+	// if (state.pc3 != tmp)
+	// {
+	// 	uart_write_str("PC3 is now ");
+	// 	uart_write_ch('0' + tmp);
+	// 	uart_write_str("\r\n");
+	// 	state.pc3 = tmp;
+	// }
 
 	tmp = (PB_IDR & (1 << 5)) ? 1 : 0;
 	if (state.constant_current != tmp)
@@ -663,6 +663,7 @@ void detect_button_press()
 	// no debounce protection
 	// ideally make output high first then input pull up
 
+	// PC_ODR |= 1 << 3;	// for creating marker on scope using pc3
 	PC_CR1 |= (1 << 7); // enable pull up on pc7 / push pull
 	PD_CR1 |= (1 << 1);
 	PD_DDR &= ~(1 << 1); // making pin as input
@@ -714,10 +715,12 @@ void detect_button_press()
 		return;
 	}
 
+	PC_ODR |= (1 << 7); // make pc7 go high for faster rise
 	PC_CR1 |= (1 << 7); // enable pull up on pc7
 	PD_CR1 |= (1 << 1);
 	PD_DDR &= ~(1 << 1); // make input
 	PC_DDR &= ~(1 << 7);
+	// PC_ODR &= ~(1 << 3); // for creating marker on scope
 }
 
 void main()
@@ -743,7 +746,7 @@ void main()
 
 	do
 	{
-		iwatchdog_tick(); 
+		iwatchdog_tick();
 		read_state();
 		display_refresh();
 		uart_drive();
