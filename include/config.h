@@ -22,10 +22,11 @@
 #include <stdint.h>
 #include "fixedpoint.h"
 
-typedef struct {
+typedef struct
+{
 	uint8_t version;
-	uint16_t vset; // mV
-	uint16_t cset; // mA
+	uint16_t vset;		// mV
+	uint16_t cset;		// mA
 	uint16_t vshutdown; // mV
 	uint16_t cshutdown; // mA
 } cfg_output_t;
@@ -33,12 +34,14 @@ typedef struct {
 // These parameters correspond to the linear formula:
 // y = a*x + b
 // where a and b are the coefficients, x is the input and y the calculated output
-typedef struct {
+typedef struct
+{
 	uint32_t a;
 	uint32_t b;
 } calibrate_t;
 
-typedef struct {
+typedef struct
+{
 	uint8_t version;
 	uint8_t name[17];
 	uint8_t default_on;
@@ -53,15 +56,16 @@ typedef struct {
 	calibrate_t cout_pwm;
 } cfg_system_t;
 
-typedef struct {
+typedef struct
+{
 	uint16_t vin_raw;
 	uint16_t vout_raw;
 	uint16_t cout_raw;
-	uint16_t vin; // mV
-	uint16_t vout; // mV
-	uint16_t cout; // mA
+	uint16_t vin;			  // mV
+	uint16_t vout;			  // mV
+	uint16_t cout;			  // mA
 	uint8_t constant_current; // If false, we are in constant voltage
-	uint8_t pc3;
+	uint8_t button_status;	  // 2 is set , 4 is down , 8 is up , 16 is ok
 } state_t;
 
 void config_load_system(cfg_system_t *sys);

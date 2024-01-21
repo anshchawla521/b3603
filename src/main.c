@@ -569,7 +569,7 @@ void config_load(void)
 	else
 		cfg_system.output = 0;
 
-	state.pc3 = 1;
+	// state.pc3 = 1;
 }
 
 void read_state(void)
@@ -622,10 +622,10 @@ void read_state(void)
 				uint8_t ch3;
 				uint8_t ch4;
 
-				ch1 = '0' + (val / 10000) % 10;
-				ch2 = '0' + (val / 1000) % 10;
-				ch3 = '0' + (val / 100) % 10;
-				ch4 = '0' + (val / 10) % 10;
+				ch1 = '0' + (state.vin / 10000) % 10;
+				ch2 = '0' + (state.vin / 1000) % 10;
+				ch3 = '0' + (state.vin / 100) % 10;
+				ch4 = '0' + (state.vin / 10) % 10;
 
 				display_show(ch1, 0, ch2, 1, ch3, 0, ch4, 0);
 			}
@@ -675,14 +675,14 @@ void detect_button_press()
 	if ((PD_IDR & (1 << 1)) == 0)
 	{
 		// down button press
-		uart_write_str("DOWN\n");
+		state.button_status = 1 << 1;
 		return;
 	}
 
 	if ((PC_IDR & (1 << 7)) == 0)
 	{
 		// set button press
-		uart_write_str("SET\n");
+		state.button_status = 1 << 0;
 		return;
 	}
 
@@ -691,7 +691,7 @@ void detect_button_press()
 	if ((PC_IDR & (1 << 7)) == 0)
 	{
 		// ok button press
-		uart_write_str("OK\n");
+		state.button_status = 1 << 3;
 		PC_CR1 |= (1 << 7); // enable pull up on pc7
 		PD_CR1 |= (1 << 1);
 		PD_DDR &= ~(1 << 1); // make input
@@ -707,7 +707,7 @@ void detect_button_press()
 	if ((PD_IDR & (1 << 1)) == 0)
 	{
 		// up button press
-		uart_write_str("UP\n");
+		state.button_status = 1 << 2;
 		PC_CR1 |= (1 << 7); // enable pull up on pc7
 		PD_CR1 |= (1 << 1);
 		PD_DDR &= ~(1 << 1); // make input

@@ -27,7 +27,7 @@ uint8_t pending_display_data[4];
 uint8_t pending_update;
 uint16_t timer;
 
-static const int8_t display_number[10] = {
+static const int8_t display_number[17] = {
 	0xFC, // '0'
 	0x60, // '1'
 	0xDA, // '2'
@@ -38,17 +38,47 @@ static const int8_t display_number[10] = {
 	0xE0, // '7'
 	0xFE, // '8'
 	0xF6, // '9'
+	0x8C, // V
+	0xEC, // A
+	0X9E, // E
+	0x9C, // C
+	0xB6, // S same as 5
+	0xCE, // P
+	0x1C, // L
+
 };
 
-#define SET_DATA(bit) do { if (bit) { PD_ODR |= (1<<4); } else { PD_ODR &= ~(1<<4); }} while (0)
-#define PULSE_CLOCK() do { PA_ODR |= (1<<1); PA_ODR &= ~(1<<1); } while (0)
-#define SAVE_DATA() do { PA_ODR &= ~(1<<2); PA_ODR |= (1<<2); } while (0)
+#define SET_DATA(bit)            \
+	do                           \
+	{                            \
+		if (bit)                 \
+		{                        \
+			PD_ODR |= (1 << 4);  \
+		}                        \
+		else                     \
+		{                        \
+			PD_ODR &= ~(1 << 4); \
+		}                        \
+	} while (0)
+#define PULSE_CLOCK()        \
+	do                       \
+	{                        \
+		PA_ODR |= (1 << 1);  \
+		PA_ODR &= ~(1 << 1); \
+	} while (0)
+#define SAVE_DATA()          \
+	do                       \
+	{                        \
+		PA_ODR &= ~(1 << 2); \
+		PA_ODR |= (1 << 2);  \
+	} while (0)
 
 inline void display_word(uint16_t word)
 {
 	uint8_t i;
 
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < 16; i++)
+	{
 		uint8_t bit = word & 1;
 		word >>= 1;
 		SET_DATA(bit);
@@ -60,12 +90,13 @@ inline void display_word(uint16_t word)
 void display_refresh(void)
 {
 	int i = display_idx++;
-	uint8_t bit = 8+(i*2);
-	uint16_t digit = 0xFF00 ^ (3<<bit);
+	uint8_t bit = 8 + (i * 2);
+	uint16_t digit = 0xFF00 ^ (3 << bit);
 
 	if (timer > 0)
 		timer--;
-	if (pending_update && timer == 0) {
+	if (pending_update && timer == 0)
+	{
 		memcpy(display_data, pending_display_data, sizeof(display_data));
 		pending_update = 0;
 		timer = 1500; // 1/2 of a second, approximately
@@ -82,7 +113,7 @@ uint8_t display_char(uint8_t ch, uint8_t dot)
 	if (dot)
 		dot = 1;
 	if (ch >= '0' && ch <= '9')
-		return display_number[ch-'0'] | dot;
+		return display_number[ch - '0'] | dot;
 	return dot;
 }
 
