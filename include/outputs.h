@@ -23,7 +23,7 @@
 
 #include "config.h"
 
-void pwm_init(void);
+void pwm_and_timer_init(void);
 void output_commit(cfg_output_t *cfg, cfg_system_t *sys, uint8_t state_constant_current);
 void output_check_state(cfg_system_t *sys, uint8_t state_constant_current);
 

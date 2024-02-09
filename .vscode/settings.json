@@ -1,7 +1,11 @@
 {
     "files.associations": {
         "stm8s.h": "c",
-        "address_definitions.h": "c"
+        "address_definitions.h": "c",
+        "outputs.h": "c",
+        "adc.h": "c",
+        "stdint.h": "c",
+        "string.h": "c"
     },
     "cmake.configureOnOpen": false
 }

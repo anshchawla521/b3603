@@ -27,7 +27,7 @@ uint8_t pending_display_data[4];
 uint8_t pending_update;
 uint16_t timer;
 
-static const int8_t display_number[17] = {
+static const int8_t display_number[18] = {
 	0xFC, // '0'
 	0x60, // '1'
 	0xDA, // '2'
@@ -38,13 +38,14 @@ static const int8_t display_number[17] = {
 	0xE0, // '7'
 	0xFE, // '8'
 	0xF6, // '9'
-	0x8C, // V
-	0xEC, // A
-	0X9E, // E
-	0x9C, // C
-	0xB6, // S same as 5
-	0xCE, // P
-	0x1C, // L
+	0x8C, // V //10
+	0xEC, // A //11
+	0X9E, // E //12
+	0x9C, // C //13
+	0xB6, // S //14
+	0xCE, // P //15
+	0x1C, // L //16
+	0x02, // - //17
 
 };
 
@@ -75,6 +76,7 @@ static const int8_t display_number[17] = {
 
 inline void display_word(uint16_t word)
 {
+	// send raw 16 bit data for 16 bit registers
 	uint8_t i;
 
 	for (i = 0; i < 16; i++)
@@ -89,6 +91,7 @@ inline void display_word(uint16_t word)
 
 void display_refresh(void)
 {
+	// actually update the display
 	int i = display_idx++;
 	uint8_t bit = 8 + (i * 2);
 	uint16_t digit = 0xFF00 ^ (3 << bit);
@@ -104,11 +107,11 @@ void display_refresh(void)
 
 	display_word(digit | display_data[i]);
 
-	if (display_idx == 4)
+	if (display_idx >= 4)
 		display_idx = 0;
 }
 
-uint8_t display_char(uint8_t ch, uint8_t dot)
+uint8_t convert_char_to_displaycode(uint8_t ch, uint8_t dot)
 {
 	if (dot)
 		dot = 1;
@@ -118,10 +121,10 @@ uint8_t display_char(uint8_t ch, uint8_t dot)
 }
 
 void display_show(uint8_t ch1, uint8_t dot1, uint8_t ch2, uint8_t dot2, uint8_t ch3, uint8_t dot3, uint8_t ch4, uint8_t dot4)
-{
-	pending_display_data[3] = display_char(ch1, dot1);
-	pending_display_data[2] = display_char(ch2, dot2);
-	pending_display_data[1] = display_char(ch3, dot3);
-	pending_display_data[0] = display_char(ch4, dot4);
+{ // load into the display buffer , will get display when display refersh called
+	pending_display_data[3] = convert_char_to_displaycode(ch1, dot1);
+	pending_display_data[2] = convert_char_to_displaycode(ch2, dot2);
+	pending_display_data[1] = convert_char_to_displaycode(ch3, dot3);
+	pending_display_data[0] = convert_char_to_displaycode(ch4, dot4);
 	pending_update = 1;
 }

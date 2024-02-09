@@ -26,7 +26,7 @@
 #define PWM_HIGH (PWM_VAL >> 8)
 #define PWM_LOW (PWM_VAL & 0xFF)
 
-void pwm_init(void)
+void pwm_and_timer_init(void)
 {
 	/* Timer 1 Channel 1 for Iout control */
 	TIM1_CR1 = 0x10;	  // Down direction
@@ -54,7 +54,18 @@ void pwm_init(void)
 	TIM2_CCR1H = 0x00; //  Start with the PWM signal off
 	TIM2_CCR1L = 0x00;
 
-	// Timers are still off, will be turned on when output is turned on
+	// Timers 1 and 2 are still off, will be turned on when output is turned on
+
+	// TIM4_CR1 = (1 << 2);
+	// TIM4_PSCR = 0x07;  // Prescaler of 128
+	// TIM4_ARR = 130;	   // 1 ms delay at 16 mhz it has to count 125 times so 255 - 125
+	// TIM4_IER = 1 << 0; // enable update interrupt
+	// TIM4_CR1 = 1 << 0; // enable counter
+
+	// CCR |= 1 << 5; // enable global interrupts
+	// __asm__("rim");
+
+	// Timer 4 is turned on
 }
 
 inline void cvcc_led_cc(void)

@@ -160,6 +160,16 @@
 #define TIM2_CCR3H *(unsigned char *)0x5315
 #define TIM2_CCR3L *(unsigned char *)0x5316
 
+/*Refer to datasheet register map section for more details*/
+#define TIM4_CR1 *(unsigned char *)0x5340
+#define TIM4_IER *(unsigned char *)0x5343
+#define TIM4_SR *(unsigned char *)0x5344
+#define TIM4_EGR *(unsigned char *)0x5345
+#define TIM4_CNTR *(unsigned char *)0x5346
+#define TIM4_PSCR *(unsigned char *)0x5347
+#define TIM4_ARR *(unsigned char *)0x5348
+#define CCR *(unsigned char *)0x7F0A
+
 /* TIM_IER bits */
 #define TIM_IER_BIE (1 << 7)
 #define TIM_IER_TIE (1 << 6)

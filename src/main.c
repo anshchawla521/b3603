@@ -19,8 +19,8 @@
 #define FW_VERSION "1.0.2"
 #define MODEL "B3603"
 // #define STM8S003
+// #define debug_enable
 
-#include "address_definitions.h"
 #include "address_definitions.h"
 #include <string.h>
 #include <stdint.h>
@@ -59,6 +59,23 @@ inline void iwatchdog_tick(void)
 	IWDG_KR = 0xAA; // Reset the counter
 }
 
+// void TIM4_UPD_OVF_IRQHandler() __interrupt(23)
+// {
+// 	led_cv();
+// }
+
+// void led_cv(void)
+// {
+// 	__asm__("sim");
+// 	TIM4_SR &= ~1;
+// 	PC_ODR ^= 1 << 3;
+// 	// iwatchdog_tick();
+// 	// uart_write_str("tic tic");
+// 	__asm__("rim");
+// 	PA_ODR &= ~(1 << 3);
+// 	PA_DDR |= (1 << 3);
+// }
+
 void commit_output()
 {
 	output_commit(&cfg_output, &cfg_system, state.constant_current);
@@ -75,7 +92,7 @@ void set_name(uint8_t *name)
 	}
 
 	memcpy(cfg_system.name, name, sizeof(cfg_system.name));
-	cfg_system.name[sizeof(cfg_system.name) - 1] = 0;
+	cfg_system.name[sizeof(cfg_system.name) - 1] = 0; // null termination
 
 	uart_write_str("SNAME: ");
 	uart_write_str(cfg_system.name);
@@ -272,6 +289,10 @@ void parse_uint(const char *name, uint32_t *pval, uint8_t *s)
 
 void process_input()
 {
+	/*
+
+
+	*/
 	// Eliminate the CR/LF character
 	uart_read_buf[uart_read_len - 1] = 0;
 
@@ -575,7 +596,7 @@ void config_load(void)
 void read_state(void)
 {
 	uint8_t tmp;
-
+	detect_button_press();
 	// tmp = (PC_IDR & (1 << 3)) ? 1 : 0;
 	// if (state.pc3 != tmp)
 	// {
@@ -616,19 +637,6 @@ void read_state(void)
 			// Calculation: val * cal_vin * 3.3 / 1024
 			state.vin = adc_to_volt(val, &cfg_system.vin_adc);
 			ch = 2;
-			{
-				uint8_t ch1;
-				uint8_t ch2;
-				uint8_t ch3;
-				uint8_t ch4;
-
-				ch1 = '0' + (state.vin / 10000) % 10;
-				ch2 = '0' + (state.vin / 1000) % 10;
-				ch3 = '0' + (state.vin / 100) % 10;
-				ch4 = '0' + (state.vin / 10) % 10;
-
-				display_show(ch1, 0, ch2, 1, ch3, 0, ch4, 0);
-			}
 			break;
 		}
 
@@ -640,6 +648,11 @@ void ensure_afr0_set(void)
 {
 	if ((OPT2 & 1) == 0)
 	{
+		while (1)
+		{
+			display_show('0' + 12, 0, '0', 0, '0', 0, '0', 0);
+			display_refresh();
+		}
 		uart_flush_writes();
 		if (eeprom_set_afr0())
 		{
@@ -658,6 +671,8 @@ void ensure_afr0_set(void)
 
 void detect_button_press()
 {
+#ifndef debug_enable
+	state.button_status = state.button_status << 4;
 	// opt2 afr0 sets c7 as tim1 ch2
 	// configure both as input for safety
 	// no debounce protection
@@ -675,14 +690,14 @@ void detect_button_press()
 	if ((PD_IDR & (1 << 1)) == 0)
 	{
 		// down button press
-		state.button_status = 1 << 1;
+		state.button_status |= 1 << 1;
 		return;
 	}
 
 	if ((PC_IDR & (1 << 7)) == 0)
 	{
 		// set button press
-		state.button_status = 1 << 0;
+		state.button_status |= 1 << 0;
 		return;
 	}
 
@@ -691,7 +706,7 @@ void detect_button_press()
 	if ((PC_IDR & (1 << 7)) == 0)
 	{
 		// ok button press
-		state.button_status = 1 << 3;
+		state.button_status |= 1 << 3;
 		PC_CR1 |= (1 << 7); // enable pull up on pc7
 		PD_CR1 |= (1 << 1);
 		PD_DDR &= ~(1 << 1); // make input
@@ -707,7 +722,7 @@ void detect_button_press()
 	if ((PD_IDR & (1 << 1)) == 0)
 	{
 		// up button press
-		state.button_status = 1 << 2;
+		state.button_status |= 1 << 2;
 		PC_CR1 |= (1 << 7); // enable pull up on pc7
 		PD_CR1 |= (1 << 1);
 		PD_DDR &= ~(1 << 1); // make input
@@ -720,18 +735,61 @@ void detect_button_press()
 	PD_CR1 |= (1 << 1);
 	PD_DDR &= ~(1 << 1); // make input
 	PC_DDR &= ~(1 << 7);
-	// PC_ODR &= ~(1 << 3); // for creating marker on scope
+// PC_ODR &= ~(1 << 3); // for creating marker on scope
+#endif
 }
 
+void handel_display()
+{
+	// debouncing u have to solve using delay wont be a good solution
+	// if ok pressed
+	if (((state.button_status & (1 << 1)) >> 1) & !((state.button_status & (1 << 5)) >> 5))
+	{
+		// single press of down
+		uart_write_str("down pressed\n");
+	}
+	else if (((state.button_status & (1 << 0)) >> 0) & !((state.button_status & (1 << 4)) >> 4))
+	{
+		// single press of set
+		uart_write_str("set pressed\n");
+	}
+	else if (((state.button_status & (1 << 2)) >> 2) & !((state.button_status & (1 << 6)) >> 6))
+	{
+		// single press of up
+		uart_write_str("up pressed\n");
+	}
+	else if (((state.button_status & (1 << 3)) >> 3) & !((state.button_status & (1 << 7)) >> 7))
+	{
+		// single press of ok
+		uart_write_str("ok pressed\n");
+	}
+
+	{
+		uint8_t ch1;
+		uint8_t ch2;
+		uint8_t ch3;
+		uint8_t ch4;
+
+		ch1 = '0' + (state.vin / 10000) % 10;
+		ch2 = '0' + (state.vin / 1000) % 10;
+		ch3 = '0' + (state.vin / 100) % 10;
+		ch4 = '0' + (state.vin / 10) % 10;
+
+		display_show(ch1, 0, ch2, 1, ch3, 0, ch4, 0);
+	}
+}
 void main()
 {
 	unsigned long i = 0;
+#ifndef debug_enable
+	CFG_GCR |= 1; // to disable SWIM and enable general IO operation
+#endif
 
 	pinout_init();
 
 	clk_init();
 	uart_init();
-	pwm_init();
+	pwm_and_timer_init();
 	adc_init();
 
 	config_load();
@@ -748,9 +806,10 @@ void main()
 	{
 		iwatchdog_tick();
 		read_state();
+		handel_display();
 		display_refresh();
 		uart_drive();
-		detect_button_press();
+
 		if (read_newline)
 		{
 			process_input();

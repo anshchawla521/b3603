@@ -65,7 +65,7 @@ typedef struct
 	uint16_t vout;			  // mV
 	uint16_t cout;			  // mA
 	uint8_t constant_current; // If false, we are in constant voltage
-	uint8_t button_status;	  // 2 is set , 4 is down , 8 is up , 16 is ok
+	uint8_t button_status;	  // higher 4 bits are prev state , lower 4 bits are current state
 } state_t;
 
 void config_load_system(cfg_system_t *sys);

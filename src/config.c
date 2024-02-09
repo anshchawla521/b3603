@@ -67,7 +67,7 @@ inline void validate_system_config(cfg_system_t *sys)
 			sys->vout_pwm.a  ||
 			sys->cout_pwm.a
 			)
-	{
+	{ // if any paramter defined or version not equal then update 
 		config_default_system(sys);
 		// TODO: If we want easy upgradability we can implement it here to
 		// upgrade from an old struct to a new one.
