@@ -19,7 +19,7 @@
 #define FW_VERSION "1.0.2"
 #define MODEL "B3603"
 // #define STM8S003
-// #define debug_enable
+#define debug_enable
 
 #include "address_definitions.h"
 #include <string.h>
